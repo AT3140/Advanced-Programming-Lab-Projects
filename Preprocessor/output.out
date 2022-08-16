@@ -1,0 +1,9 @@
+#define R 100
+#define R1 200
+int f(int);
+int main () {
+ int x, A[100];
+ z = f(x-100);
+ printf("z	=	%d,R1 = %d",z, 200);
+ return 0;
+}
