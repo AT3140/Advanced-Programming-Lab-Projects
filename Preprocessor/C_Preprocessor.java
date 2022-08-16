@@ -138,7 +138,7 @@ public class preprocessor_1d {
             alr.add(mat.start());
             alr.add(mat.end()-2);
         } 
-        //ArrayList al contains start,end,start,end,... format for indicating characters to delete
+        //ArrayList alr contains start,end,start,end,... format for indicating characters to delete
         sb1=new StringBuffer();
         boolean isliteral=false;
         int p=0;
