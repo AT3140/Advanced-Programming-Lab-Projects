@@ -8,15 +8,12 @@ public class preprocessor_1d {
         Pattern pat=Pattern.compile("#define (.+) (.+)");
         Matcher mat=pat.matcher(sb);
         while(mat.find()){
-            //System.out.println("hllo");//test
-            //System.out.println(sb.substring(mat.start(), mat.end()));//test
             mp1.put(mat.group(1),mat.group(2));
             String R=mat.group(1);
             Pattern pat1=Pattern.compile("\\b"+R+"\\b");
             Matcher mat1=pat1.matcher(sb);
             boolean macro_included=false;
             while(mat1.find()){
-                //System.out.println(sb.substring(mat1.start(), mat1.end()));//test
                 if(!macro_included){
                     macro_included=true;
                     continue;
@@ -179,6 +176,7 @@ public class preprocessor_1d {
         }
     }
     public static void main(String[] args) {
+        //input C file via IO Redirection
         //cmd
         //cd C:\2002238_C_01
         //javac preprocessor_1d.java
