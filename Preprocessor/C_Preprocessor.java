@@ -1,7 +1,95 @@
+//Input src code in C language obtained via IO redirection through Command Line
 import java.io.*;
 import java.util.*;
 import java.util.regex.*;
-public class preprocessor_1d {
+public class _2002238_C_01d {
+    public static void remove_macros(StringBuffer sb){
+        try{
+            StringBuffer sb1=new StringBuffer();
+            Scanner sc=new Scanner(sb.toString());
+            Pattern pat= Pattern.compile("#define .*");
+            Matcher mat;
+            while(sc.hasNext()){
+                String s=sc.nextLine();
+                mat=pat.matcher(s);
+                if(mat.matches()){
+                    continue;
+                }
+                sb1.append(s+'\n');
+            }
+            sb.replace(0,sb.length(),sb1.toString());
+        }
+        catch(Exception e){
+            System.out.println(e);
+        }
+    }
+    public static String find_replace(String s1, String s2, String s3){
+        //eg "X,Y" "2,3" "X*Y-2*X*Y"
+        Pattern pat=Pattern.compile("\\w+");
+        Matcher mat1=pat.matcher(s1);
+        Matcher mat2=pat.matcher(s2);
+        while(mat1.find()){
+            mat2.find();
+            String var=mat1.group();
+            String val=mat2.group();
+            //System.out.println(var+" "+val);//test
+            // Pattern pat0=Pattern.compile(var);
+            // Matcher mat0=pat0.matcher(exp);
+            s3=s3.replaceAll(var,val);
+        }
+        return s3;
+    }
+    public static void function_macros(StringBuffer sb){
+        Map<String,String[]> mpf=new HashMap<String,String[]>(); //mpf "F(X,Y)": {group(2)F,group(3)X,Y,group(4)exp}
+        Map<Integer,String[]> mpfi=new HashMap<Integer,String[]>(); //mpfi pos: {"F(X,Y)","F(2,3)"}
+        Pattern pat=Pattern.compile("#define ((.*)\\((.*)\\)) (.*)"); //group(1): "F" group(2): "X,Y" group(3): function
+        Matcher mat=pat.matcher(sb);
+        while(mat.find()){
+            String[]s0={mat.group(2),mat.group(3),mat.group(4)};
+            //System.out.println(s0[0]);//test
+            mpf.put(mat.group(1),s0);
+            boolean macro_included=false;
+            Pattern pat1=Pattern.compile(mat.group(2)+"\\((.*)\\)");
+            Matcher mat1=pat1.matcher(sb);
+            while(mat1.find()){
+                if(!macro_included){
+                    macro_included=true;
+                    continue;
+                }
+                String[] s= {mat.group(1),mat1.group(1)};
+                mpfi.put(mat1.start(),s);  //mp2 is pos:R
+            }
+        }
+        boolean isliteral=false;
+        StringBuffer sb1=new StringBuffer();
+        for(int i=0; i<sb.length();){
+            if(sb.charAt(i)=='\\'){ //escape sequence
+                sb1.append(sb.charAt(i++));
+                sb1.append(sb.charAt(i++));
+                continue;
+            }
+            if(sb.charAt(i)=='\"'){
+                sb1.append(sb.charAt(i++));
+                if(isliteral)
+                    isliteral=false;
+                else isliteral=true;
+                continue;
+            }
+            if(isliteral){
+                sb1.append(sb.charAt(i++));
+                continue;
+            }
+            if(mpfi.containsKey(i)){
+                String F=mpfi.get(i)[0];
+                String[] Func=mpf.get(mpfi.get(i)[0]);
+                String exp= find_replace(mpf.get(F)[1],mpfi.get(i)[1],mpf.get(F)[2]); //eg ("2,3", "X*Y-2*X*Y")
+                i+=Func[0].length()+1+Func[1].length()+1+1;
+                sb1.append(exp);
+            }
+            sb1.append(sb.charAt(i++));
+        }
+        sb.replace(0,sb.length(),sb1.toString());
+    }
     public static void macros(StringBuffer sb){
         Map<String,String> mp1=new HashMap<String,String>();
         Map<Integer,String> mp2=new HashMap<Integer,String>();
@@ -10,6 +98,7 @@ public class preprocessor_1d {
         while(mat.find()){
             mp1.put(mat.group(1),mat.group(2));
             String R=mat.group(1);
+            //mapping positions of constants to be replaced in mp2
             Pattern pat1=Pattern.compile("\\b"+R+"\\b");
             Matcher mat1=pat1.matcher(sb);
             boolean macro_included=false;
@@ -49,6 +138,8 @@ public class preprocessor_1d {
             sb1.append(sb.charAt(i++));
         }
         sb.replace(0,sb.length(),sb1.toString());
+        function_macros(sb);
+        remove_macros(sb);
     }
         
     
@@ -93,6 +184,7 @@ public class preprocessor_1d {
             while(sc.hasNext()){
                 String s=sc.nextLine(); 
                 mat=pat.matcher(s);
+                // System.out.println(s);
                 if(!mat.matches())
                     continue;
                 
@@ -120,19 +212,42 @@ public class preprocessor_1d {
 
     public static void remove_whitespace(StringBuffer sb){
         Scanner sc=new Scanner(sb.toString());
-        StringBuffer sb1=new StringBuffer();
+        StringBuffer sb1=new StringBuffer(); //sb1 is temp
+        Pattern pat=Pattern.compile(".*\\{.*");
+        Matcher mat;
+        Pattern pat1=Pattern.compile(".*\\}.*");
+        Matcher mat1;
+        int spaces=0;
         while(sc.hasNext()){
             String s=sc.nextLine();
             if(s.length()==0){
                 continue;
             }
-            sb1.append(s+'\n');
+            mat=pat.matcher(s);
+            mat1=pat1.matcher(s);
+            if(!mat.find() && mat1.find())
+                spaces--;
+            int i;
+            for(i=0; i<spaces; i++)
+                sb1.append(' ');
+            for(i=0; i<s.length(); i++){
+                if(!(s.charAt(i)==' ' || s.charAt(i)=='\t'))
+                    break;
+            }
+            for(; i<s.length(); i++)
+                sb1.append(s.charAt(i));
+            sb1.append('\n');
+            mat=pat.matcher(s);
+            mat1=pat1.matcher(s);
+            if(mat.find() && !mat1.find())
+                spaces++;
+            
         }
         sb.replace(0,sb.length(),sb1.toString());
         sc.close();
 
-        Pattern pat=Pattern.compile("\\s{3,}+");
-        Matcher mat= pat.matcher(sb);
+        pat=Pattern.compile("\\s{3,}+");
+        mat= pat.matcher(sb);
         ArrayList<Integer> alr=new ArrayList<>();
         while(mat.find()){
             alr.add(mat.start());
@@ -143,15 +258,19 @@ public class preprocessor_1d {
         boolean isliteral=false;
         int p=0;
         for(int i=0; i<sb.length();){
-            if(sb.charAt(i)=='\"')
+            if(sb.charAt(i)=='\"'){
+                sb1.append(sb.charAt(i++));
                 if(isliteral){
                     isliteral=true;
-                    i++;continue;
+                    continue;
                 }
                 else{
                     isliteral=false;
-                    i++;continue;
+                    continue;
                 }
+            }
+            if(isliteral)
+                {i++;continue;}
             if(p<alr.size()){
                 while(i<alr.get(p))
                     sb1.append(sb.charAt(i++));
@@ -176,11 +295,10 @@ public class preprocessor_1d {
         }
     }
     public static void main(String[] args) {
-        //input C file via IO Redirection
         //cmd
         //cd C:\2002238_C_01
         //javac preprocessor_1d.java
-        //java preprocessor_1d.java < 01d_test1.c
+        //java preprocessor_1d.java < 01d_test1.c > 01d_test1.out
         try{
             //FileReader fr=new FileReader("01d_test1.c");
             Scanner sci= new Scanner(System.in);
@@ -197,9 +315,12 @@ public class preprocessor_1d {
                 sb.append('\n');
             }
              
+           
             remove_comments(sb);
             remove_whitespace(sb);
             header_file(sb);
+            remove_comments(sb);
+            remove_whitespace(sb);           
             macros(sb);
             
             System.out.println(sb);           
