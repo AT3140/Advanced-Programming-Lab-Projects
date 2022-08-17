@@ -2,7 +2,7 @@
 import java.io.*;
 import java.util.*;
 import java.util.regex.*;
-public class _2002238_C_01d {
+public class C_Preprocessor {
     public static void remove_macros(StringBuffer sb){
         try{
             StringBuffer sb1=new StringBuffer();
