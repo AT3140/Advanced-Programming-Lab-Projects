@@ -305,12 +305,12 @@ public class _2002238_C_01d {
         //javac _2002238_C_01d.java
         //java _2002238_C_01d.java < 01d_test1.c > 01d_test1.out
         try{
-            //FileReader fr=new FileReader("01d_test1.c");
+            //FileReader fr=new FileReader("test.c");
             Scanner sci= new Scanner(System.in);
             
             StringBuffer sb=new StringBuffer();
 
-            //int chi;
+            // int chi;
             // while((chi=fr.read())!=-1){
             //     sb.append((char)chi);
             // }//correct
