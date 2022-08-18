@@ -1,8 +1,7 @@
-//Input src code in C language obtained via IO redirection through Command Line
 import java.io.*;
 import java.util.*;
 import java.util.regex.*;
-public class C_Preprocessor {
+public class _2002238_C_01d {
     public static void remove_macros(StringBuffer sb){
         try{
             StringBuffer sb1=new StringBuffer();
@@ -144,11 +143,12 @@ public class C_Preprocessor {
         
     
     public static void add_lines(StringBuffer sb, String sh){
-        Pattern pat2=Pattern.compile("int main");
+        Pattern pat2=Pattern.compile("int\\s+main");
         Matcher mat2=pat2.matcher(sb);
         if(mat2.find())
             sb.insert(mat2.start(), sh+"\n");
     }
+
     public static void add_file(StringBuffer sb, Set<String> hfs,String hfname) {
         try{
             File hf=new File(hfname);
@@ -161,6 +161,7 @@ public class C_Preprocessor {
                 mat1=pat1.matcher(sh); 
                 if(mat1.matches()){//line is #include type 
                     String hfname1=mat1.group(1);
+                    //System.out.println(hfname1);
                     if(!hfs.contains(hfname1))
                         {hfs.add(hfname1);add_file(sb,hfs,hfname1);}
                     continue;
@@ -184,12 +185,11 @@ public class C_Preprocessor {
             while(sc.hasNext()){
                 String s=sc.nextLine(); 
                 mat=pat.matcher(s);
-                // System.out.println(s);
-                if(!mat.matches())
+                //System.out.println(s);
+                if(!mat.find())
                     continue;
                 
                 String hfname=mat.group(1); 
-                
                 if(hfs.contains(hfname)){//hfname already in hfs
                     continue;
                 } 
@@ -209,6 +209,31 @@ public class C_Preprocessor {
             System.out.println(e);
         }
     }   
+
+    public static boolean should_remove(String s, int i){
+        Pattern pat=Pattern.compile("\\s+");
+        Matcher mat=pat.matcher(s);
+        while(mat.find()){
+            if(i>mat.start() && i<mat.end())
+                return true;
+        }
+        pat=Pattern.compile("\\s");
+        mat=pat.matcher(s);
+        while(mat.find()){
+            if(i==mat.start()){
+                if(i+1<s.length()){
+                    if(s.charAt(i+1)=='=' || s.charAt(i+1)==';' || s.charAt(i+1)==')'||s.charAt(i+1)=='(')
+                        return true;
+                    if(s.charAt(i+1)=='[' || s.charAt(i+1)==']' || s.charAt(i+1)=='{' || s.charAt(i+1)=='}')
+                        return true;
+                }
+                if(i>0)
+                    if(s.charAt(i-1)==',')
+                        return true;
+            }
+        }
+        return false;
+    }
 
     public static void remove_whitespace(StringBuffer sb){
         Scanner sc=new Scanner(sb.toString());
@@ -234,9 +259,27 @@ public class C_Preprocessor {
                 if(!(s.charAt(i)==' ' || s.charAt(i)=='\t'))
                     break;
             }
+            //String s1=s.substring(i, s.length());
+            boolean isliteral=false;
             for(; i<s.length(); i++)
-                sb1.append(s.charAt(i));
-            sb1.append('\n');
+                if(s.charAt(i)=='\"'){
+                    sb1.append(s.charAt(i));
+                    if(isliteral)
+                        isliteral=false;
+                    else
+                        isliteral=true;
+                }
+                else if(isliteral){
+                    sb1.append(s.charAt(i));
+                }
+                else if(!isliteral && should_remove(s,i)){
+                    continue;
+                }
+                else 
+                    sb1.append(s.charAt(i));
+
+            if(!isliteral)
+                sb1.append('\n');
             mat=pat.matcher(s);
             mat1=pat1.matcher(s);
             if(mat.find() && !mat1.find())
@@ -245,44 +288,6 @@ public class C_Preprocessor {
         }
         sb.replace(0,sb.length(),sb1.toString());
         sc.close();
-
-        pat=Pattern.compile("\\s{3,}+");
-        mat= pat.matcher(sb);
-        ArrayList<Integer> alr=new ArrayList<>();
-        while(mat.find()){
-            alr.add(mat.start());
-            alr.add(mat.end()-2);
-        } 
-        //ArrayList alr contains start,end,start,end,... format for indicating characters to delete
-        sb1=new StringBuffer();
-        boolean isliteral=false;
-        int p=0;
-        for(int i=0; i<sb.length();){
-            if(sb.charAt(i)=='\"'){
-                sb1.append(sb.charAt(i++));
-                if(isliteral){
-                    isliteral=true;
-                    continue;
-                }
-                else{
-                    isliteral=false;
-                    continue;
-                }
-            }
-            if(isliteral)
-                {i++;continue;}
-            if(p<alr.size()){
-                while(i<alr.get(p))
-                    sb1.append(sb.charAt(i++));
-                p++;
-                while(i<=alr.get(p)){
-                    i++;
-                }
-                p++;
-            }
-            else sb1.append(sb.charAt(i++));
-        }
-        sb.replace(0,sb.length(),sb1.toString());
     }
     
 
@@ -297,15 +302,15 @@ public class C_Preprocessor {
     public static void main(String[] args) {
         //cmd
         //cd C:\2002238_C_01
-        //javac preprocessor_1d.java
-        //java preprocessor_1d.java < 01d_test1.c > 01d_test1.out
+        //javac _2002238_C_01d.java
+        //java _2002238_C_01d.java < 01d_test1.c > 01d_test1.out
         try{
             //FileReader fr=new FileReader("01d_test1.c");
             Scanner sci= new Scanner(System.in);
             
             StringBuffer sb=new StringBuffer();
 
-            // int chi;
+            //int chi;
             // while((chi=fr.read())!=-1){
             //     sb.append((char)chi);
             // }//correct
@@ -315,7 +320,7 @@ public class C_Preprocessor {
                 sb.append('\n');
             }
              
-           
+             
             remove_comments(sb);
             remove_whitespace(sb);
             header_file(sb);
