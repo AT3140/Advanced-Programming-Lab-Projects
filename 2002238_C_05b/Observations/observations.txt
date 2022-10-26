@@ -1,0 +1,23 @@
+Observations:
+
+Data Structures belonging to List were made to parse and sort the words into two containers followed by counting the common cases among them. 
+Counting only alphabetical words-
+Book1: 23552 words
+Book2: 30925 words
+
+Data Structure | Book1+Book2:Time Taken(ms)
+ArrayList		        831
+LinkedList			 413038
+HashSet			  65
+TreeSet			  82
+
+HashSet outperforms everyother DataStructure. Broadly Sets work faster in this task.
+
+Justification:
+
+Lists are not faster than O(n) in insertion operations because each element has to traversed in worst case either to search (in case of LinkedList) or shift elements during insertion (in case of ArrayLists).
+While HashSet uses HashTables allowing it constant time O(1)- lookup, insertion and deletion operations, making it much faster than any of the structures.
+TreeSet on the other hand uses Balanced BST giving it an O(log n) time complexity.
+
+
+			
